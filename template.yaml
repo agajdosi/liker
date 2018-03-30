@@ -1,0 +1,85 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: go-minimal-ex
+  annotations:
+    description: Bare bone template for basic CLI application in Golang.
+    tags: golang
+    iconClass: icon-go-gopher
+labels:
+  template: go-minimal-ex
+objects:
+
+### IMAGE STREAM
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: go-minimal-ex
+    annotations:
+      description: Keeps track of changes in the application image.
+
+### BUILD
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: go-minimal-ex
+    annotations:
+      description: Defines how to build the application.
+  spec:
+    source:
+      type: Git
+      git:
+        uri: "https://github.com/agajdosi/liker.git"
+    triggers:
+    - type: ConfigChange
+    strategy:
+      type: Docker
+    output:
+      to:
+        kind: ImageStreamTag
+        name: go-minimal-ex:latest
+    postCommit:
+      script: go test -v ./...
+
+### DEPLOYMENT
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: go-minimal-ex
+    annotations:
+      description: Defines how to deploy the application server.
+  spec:
+    strategy:
+      type: Recreate
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - go-minimal-ex
+        from:
+          kind: ImageStreamTag
+          name: go-minimal-ex:latest
+    - type: ConfigChange
+    replicas: 1
+    selector:
+      name: go-minimal-ex
+    template:
+      metadata:
+        name: go-minimal-ex
+        labels:
+          name: go-minimal-ex
+      spec:
+        containers:
+        - name: go-minimal-ex
+          image: go-minimal-ex
+          env:
+          - name: GET_URL
+            value: ${GET_URL}
+
+        
+parameters:
+- name: GET_URL
+  description: Which URL will be checked.
+  value: https://google.com 
