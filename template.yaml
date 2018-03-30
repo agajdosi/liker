@@ -2,35 +2,41 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: go-minimal-ex
+  name: liker
   annotations:
     description: Bare bone template for basic CLI application in Golang.
     tags: golang
     iconClass: icon-go-gopher
 labels:
-  template: go-minimal-ex
+  template: liker
 objects:
 
-### IMAGE STREAM
+### IMAGE STREAMS
 - kind: ImageStream
   apiVersion: v1
   metadata:
-    name: go-minimal-ex
+    name: liker-binary
     annotations:
       description: Keeps track of changes in the application image.
 
-### BUILD
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: liker-runtime
+    annotations:
+      description: Keeps track of changes in the application image.
+
+### BUILD ARTIFACT
 - kind: BuildConfig
   apiVersion: v1
   metadata:
-    name: go-minimal-ex
-    annotations:
-      description: Defines how to build the application.
+    name: liker-binary
   spec:
     source:
       type: Git
       git:
         uri: "https://github.com/agajdosi/liker.git"
+      contextDir: build-binary
     triggers:
     - type: ConfigChange
     strategy:
@@ -38,15 +44,45 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: go-minimal-ex:latest
-    postCommit:
-      script: go test -v ./...
+        name: liker-binary:latest
 
-### DEPLOYMENT
+  # BUILD RUNTIME
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: liker-runtime
+  spec:
+    source:
+      type: Git
+      git:
+        uri: "https://github.com/agajdosi/liker.git"
+      contextDir: runtime
+      images:
+      - from:
+          kind: ImageStreamTag
+          name: liker-binary:latest
+        paths:
+        - destinationDir: runtime
+          sourcePath: /go/src/github.com/agajdosi/liker/build-binary/build-binary
+    triggers:
+    - type: ConfigChange
+#    - imageChange: {}
+#      type: ImageChange
+    strategy:
+      dockerStrategy:
+        from: 
+          kind: DockerImage
+          name: alpine:latest
+    output:
+      to:
+        kind: ImageStreamTag
+        name: liker-runtime:latest
+
+# DEPLOYMENT
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: go-minimal-ex
+    name: liker
     annotations:
       description: Defines how to deploy the application server.
   spec:
@@ -57,29 +93,30 @@ objects:
       imageChangeParams:
         automatic: true
         containerNames:
-        - go-minimal-ex
+        - liker
         from:
           kind: ImageStreamTag
-          name: go-minimal-ex:latest
+          name: liker-runtime:latest
     - type: ConfigChange
     replicas: 1
     selector:
-      name: go-minimal-ex
+      name: liker
     template:
       metadata:
-        name: go-minimal-ex
+        name: liker
         labels:
-          name: go-minimal-ex
+          name: liker
       spec:
         containers:
-        - name: go-minimal-ex
-          image: go-minimal-ex
+        - name: liker
+          image: liker
           env:
           - name: GET_URL
             value: ${GET_URL}
+          command:
+          - "/liker/build-binary"
 
-        
 parameters:
 - name: GET_URL
   description: Which URL will be checked.
-  value: https://google.com 
+  value: http://google.com 
