@@ -72,7 +72,8 @@ objects:
       dockerStrategy:
         from: 
           kind: DockerImage
-          name: alpine:latest
+          name: selenium/standalone-chrome
+#          name: alpine:latest
     output:
       to:
         kind: ImageStreamTag

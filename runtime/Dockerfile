@@ -6,4 +6,4 @@ COPY . /liker
 
 RUN chmod 755 /liker/build-binary
 
-RUN apk --update --no-cache add chromium udev mesa-gl mesa-dri-swrast
+#RUN apk --update --no-cache add chromium udev mesa-gl mesa-dri-swrast
