@@ -1,5 +1,5 @@
+FROM zenika/alpine-chrome:latest
 #FROM alpine
-FROM zenika/alpine-chrome
 
 RUN mkdir -p /liker
 WORKDIR /liker
