@@ -7,4 +7,4 @@ COPY . /home/liker
 
 RUN chmod 755 /home/liker/build-binary
 
-#RUN apk --update --no-cache add chromium udev mesa-gl mesa-dri-swrast
+RUN dnf install google-chrome-stable -y
