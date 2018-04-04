@@ -1,4 +1,4 @@
-FROM zenika/alpine-chrome:latest
+USER chrome
 
 RUN mkdir -p /liker
 WORKDIR /liker

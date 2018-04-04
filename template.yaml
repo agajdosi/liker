@@ -72,7 +72,8 @@ objects:
       dockerStrategy:
         from: 
           kind: DockerImage
-          name: alpine:latest
+#          name: alpine:latest
+          name: zenika/alpine-chrome:latest
     output:
       to:
         kind: ImageStreamTag
