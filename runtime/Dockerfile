@@ -1,3 +1,5 @@
+FROM alpine:latest
+
 USER chrome
 
 RUN mkdir -p /liker
