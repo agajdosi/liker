@@ -2,7 +2,7 @@ FROM alpine:latest
 
 USER chrome
 
-RUN mkdir -p /liker
+RUN sudo mkdir -p /liker
 WORKDIR /liker
 COPY . /liker
 
